@@ -6,14 +6,13 @@ const Project = require('../models/projectsModel');
 
 exports.getProjects = async (req, res) => {
     try {
-        const newProject = Project.find().sort({ createdAt: -1 });
-        const projects = await newProject;
-        res.status(201).json(projects);
+        const projects = await Project.find().sort({ createdAt: -1 });
+        res.status(200).json(projects);
     } catch (error) {
-        console.error('Error adding project:', error);
+        console.error('Error fetching projects:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
-}
+};
 
 
 
