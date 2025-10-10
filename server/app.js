@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const projectRoutes = require('./routes/projectRoute');
 const blogRoutes = require('./routes/blogRoutes');
 const contactRoutes = require('./routes/contactRoute');
+const {protect} = require('./middleware/authMiddleware'); 
 
 const app = express();
 
@@ -34,7 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 // -----------------------------
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
-app.use('/api/blogs', blogRoutes);
+app.use('/api/blogs',protect,blogRoutes);
 app.use('/api/contacts', contactRoutes);
 
 

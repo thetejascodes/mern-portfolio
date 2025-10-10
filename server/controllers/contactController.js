@@ -23,7 +23,7 @@ exports.createContact = async (req, res) => {
         })
         const mailOptions = {
             from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
-            to: process.env.RECEIVER_EMAIL, 
+            to: process.env.RECEIVER_EMAIL,
             subject: 'New Portfolio Message',
             html: `
                 <h3>You have a new message from your portfolio</h3>
@@ -33,9 +33,18 @@ exports.createContact = async (req, res) => {
             `
         };
         await transporter.sendMail(mailOptions);
-        res.status(201).json({ success: true, message: 'Message sent successfully'})
+        res.status(201).json({ success: true, message: 'Message sent successfully' })
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 
+}
+exports.getContacts = async (req, res) => {
+    try {
+        const contact = await Contact.find().sort({ createdAt: -1 });
+        res.status(200).json({ success: true, contact });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+
+    }
 }
