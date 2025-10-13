@@ -9,6 +9,7 @@ const projectRoutes = require('./routes/projectRoute');
 const blogRoutes = require('./routes/blogRoutes');
 const contactRoutes = require('./routes/contactRoute');
 const {protect} = require('./middleware/authMiddleware'); 
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -39,8 +40,11 @@ app.use('/api/blogs',protect,blogRoutes);
 app.use('/api/contacts', contactRoutes);
 
 
+
 app.get('/', (req, res) => {
   res.json({ message: 'API is running ✅' });
 });
+
+app.use(errorHandler);
 
 module.exports = app;

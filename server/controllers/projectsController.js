@@ -3,50 +3,51 @@ const express = require('express');
 const Project = require('../models/projectsModel');
 
 
-
-exports.getProjects = async (req, res) => {
-    try {
-        const projects = await Project.find().sort({ createdAt: -1 });
-        res.status(200).json(projects);
-    } catch (error) {
-        console.error('Error fetching projects:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
+exports.getProjects = async (req, res, next) => {
+  try {
+    const projects = await Project.find().sort({ createdAt: -1 });
+    res.status(200).json(projects);
+  } catch (error) {
+    throw new Error('Error fetching projects');
+  }
 };
 
+exports.addProject = async (req, res, next) => {
+  try {
+    const newProject = new Project(req.body);
+    const savedProject = await newProject.save();
+    res.status(201).json(savedProject);
+  } catch (error) {
+    throw new Error('Error adding project');
+  }
+};
 
+exports.updateProjects = async (req, res, next) => {
+  try {
+    const updated = await Project.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
-exports.addProject = async (req, res) => {
-    try {
-        const newProject = new Project(req.body);
-        const savedProject = await newProject.save();
-        res.status(201).json(savedProject);
+    if (!updated) {
+      throw new Error('Project not found');
     }
-    catch (error) {
-        console.error('Error adding project:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-}
-exports.updateProjects = async (req,res) =>{
-    try {
-        const updated = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updated);  
-    } catch (error) {
-        console.error('Error updating project:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-}
 
-exports.deleteProject = async (req,res) =>{
-try {
-        const deleted = await Project.findByIdAndDelete(req.params.id);
+    res.status(200).json(updated);
+  } catch (error) {
+    throw new Error('Error updating project');
+  }
+};
+
+exports.deleteProject = async (req, res, next) => {
+  try {
+    const deleted = await Project.findByIdAndDelete(req.params.id);
+
     if (!deleted) {
-        return res.status(404).json({ message: 'Project not found' });
+      throw new Error('Project not found');
     }
+
     res.json({ message: 'Project deleted successfully' });
-} catch (error) {
-    
-    console.error('Error deleting project:', error);
-    res.status(500).json({ message: 'Internal server error' });
-}
-}
+  } catch (error) {
+    throw new Error('Error deleting project');
+  }
+};
