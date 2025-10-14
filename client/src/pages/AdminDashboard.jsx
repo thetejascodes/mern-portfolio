@@ -46,7 +46,7 @@ const AdminDashboard = () => {
       { name: "Blogs", count: counts.blogs },
       { name: "Projects", count: counts.projects },
       { name: "Contacts", count: counts.contacts },
-    ];
+    ]; 
   }, [counts]);
 
   if (!user) return <p className="text-center mt-20">Loading...</p>;

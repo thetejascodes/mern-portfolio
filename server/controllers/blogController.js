@@ -29,19 +29,18 @@ exports.getBlogs = async (req, res) => {
     }
 };
 
-exports.getBlogById = async (req, res) => {
+exports.getBlogById = async (req, res, next) => {
     try {
-        const blog = await Blog.findById(req.params.id);
-        if (!blog) return res.status(404);
-        throw new Error('Blog not found');
-        res.status(200).json(blog);
+      const blog = await Blog.findById(req.params.id);
+      if (!blog) {
+        return res.status(404).json({ message: 'Blog not found' });
+      }
+      return res.status(200).json(blog);
     } catch (error) {
-        console.error('Error fetching blog:', error);
-        res.status(500);
-        throw new Error(error.message);
+      console.error('Error fetching blog:', error);
+      return res.status(500).json({ message: error.message });
     }
-};
-
+  };
 exports.updateBlogs = async (req, res) => {
     try {
         const allowedUpdates = (({ title, content, image, author, tags }) => 
