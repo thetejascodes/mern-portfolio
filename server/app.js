@@ -3,6 +3,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
 
 const authRoutes = require('./routes/authRoutes');
 const projectRoutes = require('./routes/projectRoute');
@@ -26,10 +27,16 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
   max: 100, 
 });
+
+if(process.env.NODE_ENV==='development'){
+    app.use(morgan('dev'));
+}
+
 app.use(limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 
 
 // 📌 API Routes
@@ -39,11 +46,6 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/blogs',protect,blogRoutes);
 app.use('/api/contacts', contactRoutes);
 
-
-
-app.get('/', (req, res) => {
-  res.json({ message: 'API is running ✅' });
-});
 
 app.use(errorHandler);
 
