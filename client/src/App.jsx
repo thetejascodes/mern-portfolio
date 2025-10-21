@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ManageBlogs from "./pages/ManageBlogs";
+import ManageContacts from "./pages/ManageContacts";
 
 export default function App() {
   return (
@@ -37,6 +38,14 @@ export default function App() {
               element={
                 <ProtectedRoute adminOnly>
                   <ManageBlogs />
+                </ProtectedRoute>
+              }
+            ></Route>
+            <Route
+              path="/manage-contacts"
+              element={
+                <ProtectedRoute adminOnly>
+                  <ManageContacts />
                 </ProtectedRoute>
               }
             ></Route>

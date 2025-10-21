@@ -39,7 +39,11 @@ export default function BlogDetail() {
       <h1 className="text-3xl font-bold mt-4 mb-2">{blog.title}</h1>
       <p className="text-gray-500 mb-4">{blog.author ? `By ${blog.author}` : null}</p>
       {blog.image ? (
-        <img src={blog.image} alt={blog.title} className="w-full rounded mb-6" />
+        <img 
+          src={blog.image.startsWith('http') ? blog.image : `http://localhost:5000${blog.image}`} 
+          alt={blog.title} 
+          className="w-full rounded mb-6" 
+        />
       ) : null}
       <div className="prose whitespace-pre-wrap">{blog.content}</div>
       {Array.isArray(blog.tags) && blog.tags.length > 0 && (

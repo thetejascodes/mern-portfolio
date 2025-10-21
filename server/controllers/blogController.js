@@ -1,20 +1,33 @@
 const mongoose = require('mongoose');
-const Blog  = require('../models/blogModel') 
+const Blog  = require('../models/blogModel');
+const path = require('path'); 
 
 exports.addBlog = async (req, res,next) => {
     try {
-        const { title, content, image, author, tags } = req.body;
+        const { title, content, author, tags } = req.body;
         if (!title || !content) {
-            return res.status(400);
-            throw new Error('Title and content are required');
+            return res.status(400).json({ message: 'Title and content are required' });
         }
-        const newBlog = new Blog({ title, content, image, author, tags });
+        
+        // Handle image upload
+        let imagePath = '';
+        if (req.file) {
+            imagePath = `/uploads/${req.file.filename}`;
+        }
+        
+        const newBlog = new Blog({ 
+            title, 
+            content, 
+            image: imagePath, 
+            author, 
+            tags 
+        });
         const savedBlog = await newBlog.save();
+        console.log('Blog saved with image path:', savedBlog.image);
         res.status(201).json(savedBlog);
     } catch (error) {
         console.error('Error adding blog:', error);
-        res.status(500);
-        next(error);
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -35,6 +48,7 @@ exports.getBlogById = async (req, res, next) => {
       if (!blog) {
         return res.status(404).json({ message: 'Blog not found' });
       }
+      console.log('Fetching blog with image path:', blog.image);
       return res.status(200).json(blog);
     } catch (error) {
       console.error('Error fetching blog:', error);
@@ -43,11 +57,23 @@ exports.getBlogById = async (req, res, next) => {
   };
 exports.updateBlogs = async (req, res) => {
     try {
-        const allowedUpdates = (({ title, content, image, author, tags }) => 
-            ({ title, content, image, author, tags }))(req.body);
+        const { title, content, author, tags } = req.body;
+        
+        // Handle image upload
+        let imagePath = '';
+        if (req.file) {
+            imagePath = `/uploads/${req.file.filename}`;
+        }
+        
+        const allowedUpdates = { title, content, author, tags };
+        if (imagePath) {
+            allowedUpdates.image = imagePath;
+        }
+        
         const updated = await Blog.findByIdAndUpdate(req.params.id, allowedUpdates, { new: true });
-        if (!updated) return res.status(404);
-        throw new Error('Blog not found');
+        if (!updated) {
+            return res.status(404).json({ message: 'Blog not found' });
+        }
         res.status(200).json(updated);
     } catch (error) {
         console.error('Error updating blog:', error);

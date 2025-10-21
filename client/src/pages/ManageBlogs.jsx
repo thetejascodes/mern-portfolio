@@ -18,10 +18,12 @@ export default function ManageBlogs() {
     author: "",
     tags: "",
   });
+  const [selectedFile, setSelectedFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   const resetForm = () => {
     setForm({ _id: null, title: "", content: "", image: "", author: "", tags: "" });
+    setSelectedFile(null);
   };
 
   async function fetchBlogs() {
@@ -46,22 +48,40 @@ export default function ManageBlogs() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
     try {
-      const payload = {
-        title: form.title,
-        content: form.content,
-        image: form.image || undefined,
-        author: form.author || undefined,
-        tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined,
-      };
+      const formData = new FormData();
+      formData.append('title', form.title);
+      formData.append('content', form.content);
+      formData.append('author', form.author || '');
+      formData.append('tags', form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean).join(',') : '');
+      
+      if (selectedFile) {
+        formData.append('image', selectedFile);
+      } else if (form.image) {
+        formData.append('image', form.image);
+      }
+
       if (form._id) {
-        await api.put(`/blogs/${form._id}`, payload);
+        await api.put(`/blogs/${form._id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
       } else {
-        await api.post("/blogs", payload);
+        await api.post("/blogs", formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
       }
       await fetchBlogs();
       resetForm();
@@ -136,13 +156,54 @@ export default function ManageBlogs() {
               placeholder="Content"
               className="border rounded p-2 h-32"
             />
-            <input
-              name="image"
-              value={form.image}
-              onChange={handleChange}
-              placeholder="Image URL (optional)"
-              className="border rounded p-2"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Blog Image
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="border rounded p-2 w-full"
+              />
+              {selectedFile && (
+                <div className="mt-2">
+                  <p className="text-sm text-green-600 mb-2">
+                    Selected: {selectedFile.name}
+                  </p>
+                  <img 
+                    src={URL.createObjectURL(selectedFile)} 
+                    alt="Preview" 
+                    className="w-full h-48 object-cover rounded-lg border"
+                  />
+                </div>
+              )}
+              <p className="text-sm text-gray-500 mt-1">
+                Or enter image URL:
+              </p>
+              <input
+                name="image"
+                value={form.image}
+                onChange={handleChange}
+                placeholder="Image URL (optional)"
+                className="border rounded p-2 mt-1 w-full"
+              />
+              {form.image && !selectedFile && (
+                <div className="mt-2">
+                  <p className="text-sm text-blue-600 mb-2">URL Image Preview:</p>
+                  <img 
+                    src={form.image} 
+                    alt="URL Preview" 
+                    className="w-full h-48 object-cover rounded-lg border"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <p className="text-sm text-red-500 hidden">Failed to load image</p>
+                </div>
+              )}
+            </div>
             <input
               name="author"
               value={form.author}
@@ -193,7 +254,32 @@ export default function ManageBlogs() {
                   <h4 className="text-2xl font-bold mb-1">{selectedBlog.title}</h4>
                   <p className="text-gray-500 mb-3">{selectedBlog.author ? `By ${selectedBlog.author}` : null}</p>
                   {selectedBlog.image ? (
-                    <img src={selectedBlog.image} alt={selectedBlog.title} className="w-full rounded mb-4" />
+                    <div>
+                      <p className="text-sm text-gray-500 mb-2">
+                        Debug - Image path: {selectedBlog.image}
+                      </p>
+                      <p className="text-sm text-gray-500 mb-2">
+                        Debug - Full URL: {selectedBlog.image.startsWith('http') ? selectedBlog.image : `http://localhost:5000${selectedBlog.image}`}
+                      </p>
+                      <img 
+                        src={selectedBlog.image.startsWith('http') ? selectedBlog.image : `http://localhost:5000${selectedBlog.image}`} 
+                        alt={selectedBlog.title} 
+                        className="w-full rounded mb-4" 
+                        onError={(e) => {
+                          console.error('Image failed to load:', e.target.src);
+                          console.error('Error details:', e);
+                          console.error('Trying alternative URL...');
+                          // Try alternative URL construction
+                          const altUrl = selectedBlog.image.startsWith('/') ? `http://localhost:5000${selectedBlog.image}` : `http://localhost:5000/${selectedBlog.image}`;
+                          console.log('Alternative URL:', altUrl);
+                          e.target.src = altUrl;
+                        }}
+                        onLoad={() => {
+                          console.log('Image loaded successfully:', selectedBlog.image);
+                        }}
+                      />
+                      <p className="text-sm text-red-500 hidden">Failed to load image</p>
+                    </div>
                   ) : null}
                   <div className="whitespace-pre-wrap">{selectedBlog.content}</div>
                   {Array.isArray(selectedBlog.tags) && selectedBlog.tags.length > 0 && (

@@ -14,7 +14,17 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-app.use(helmet()); 
+// Temporarily disable helmet to test image loading
+// app.use(helmet({
+//   contentSecurityPolicy: {
+//     directives: {
+//       defaultSrc: ["'self'"],
+//       imgSrc: ["'self'", "data:", "http://localhost:5000"],
+//       styleSrc: ["'self'", "'unsafe-inline'"],
+//       scriptSrc: ["'self'"],
+//     },
+//   },
+// })); 
 app.use(
   cors({
     origin: 'http://localhost:5173', 
@@ -36,6 +46,9 @@ app.use(limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
 
 
 

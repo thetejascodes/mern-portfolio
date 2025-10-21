@@ -38,6 +38,13 @@ const Blogs = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {blogs.map((b) => (
             <Link key={b._id} to={`/blogs/${b._id}`} className="block bg-white rounded-xl shadow p-4 hover:shadow-md">
+              {b.image && (
+                <img 
+                  src={b.image.startsWith('http') ? b.image : `http://localhost:5000${b.image}`} 
+                  alt={b.title}
+                  className="w-full h-48 object-cover rounded-lg mb-4"
+                />
+              )}
               <h2 className="text-xl font-semibold">{b.title}</h2>
               <p className="text-gray-500 text-sm">{b.author || ''}</p>
               <p className="mt-2 line-clamp-3">{b.content}</p>
