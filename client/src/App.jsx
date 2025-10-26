@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ManageBlogs from "./pages/ManageBlogs";
 import ManageContacts from "./pages/ManageContacts";
+import ManageProjects from "./pages/ManageProjects";
 
 export default function App() {
   return (
@@ -46,6 +47,14 @@ export default function App() {
               element={
                 <ProtectedRoute adminOnly>
                   <ManageContacts />
+                </ProtectedRoute>
+              }
+            ></Route>
+            <Route
+              path="/manage-projects"
+              element={
+                <ProtectedRoute adminOnly>
+                  <ManageProjects />
                 </ProtectedRoute>
               }
             ></Route>
